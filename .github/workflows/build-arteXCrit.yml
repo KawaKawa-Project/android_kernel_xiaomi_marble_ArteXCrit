@@ -18,6 +18,7 @@ jobs:
       - name: Checkout resukisu
         uses: actions/checkout@v4
         with:
+          repository: KawaKawa-Project/android_kernel_xiaomi_marble_ArteXCrit
           ref: ArteXCrit
           fetch-depth: 1
 
