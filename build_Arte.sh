@@ -74,7 +74,7 @@ CLANG_PATH=~/build_toolchain/llvm-23.1.0-x86_64/bin
 
 export PATH=$(realpath $CLANG_PATH):$(realpath ${KDIR}/build-tools):${PATH}
 
-export LOCALVERSION=-v5.1
+export LOCALVERSION=-v1
 $with_ksu && {
 	while true; do
 		kversion_ksu_suffix=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 3)
