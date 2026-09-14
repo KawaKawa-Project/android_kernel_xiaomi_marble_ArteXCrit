@@ -1,0 +1,84 @@
+name: Build ArteXCrit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ArteXCrit V1
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            bc \
+            bison \
+            build-essential \
+            ccache \
+            curl \
+            flex \
+            git \
+            libelf-dev \
+            libssl-dev \
+            lz4 \
+            python3 \
+            rsync \
+            unzip \
+            zip
+
+      - name: Setup LLVM 23.1.0
+        run: |
+          mkdir -p "$HOME/build_toolchain"
+          cd "$HOME/build_toolchain"
+
+          curl -L \
+            -o llvm.tar.xz \
+            https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.0/LLVM-23.1.0-Linux-X64.tar.xz
+
+          tar -xf llvm.tar.xz
+
+          mv LLVM-23.1.0-Linux-X64 llvm-23.1.0-x86_64
+
+          rm -f llvm.tar.xz
+
+          echo "$HOME/build_toolchain/llvm-23.1.0-x86_64/bin" >> "$GITHUB_PATH"
+
+      - name: Check LLVM
+        run: |
+          clang --version
+          ld.lld --version
+          llvm-ar --version
+
+      - name: Build ArteXCrit
+        run: |
+          bash ./build_Arte.sh
+
+      - name: Check build output
+        run: |
+          echo "===== BUILD OUTPUT ====="
+          find out/arch/arm64/boot \
+            -maxdepth 2 \
+            -type f \
+            -exec ls -lh {} \;
+
+      - name: Upload kernel Image
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArteXCrit-V1
+          path: |
+            out/arch/arm64/boot/Image
+            out/arch/arm64/boot/Image.gz
+            out/arch/arm64/boot/Image.lz4
+          if-no-files-found: warn
+          compression-level: 0
